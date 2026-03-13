@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Money Shop — Bills &amp; Coins</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F0E8;
+  --surface: #FFFDF7;
+  --surface2: #F0EBE0;
+  --gbill: #4A7C59;
+  --gbill-lt: #D4E8DA;
+  --gbill-dk: #2D4E38;
+  --penny: #C8793E;
+  --penny-dk: #7A4620;
+  --nickel: #9BAAB5;
+  --nickel-dk: #4A6070;
+  --dime: #A8BDD0;
+  --dime-dk: #3A5870;
+  --quarter: #C8CDD2;
+  --quarter-dk: #505860;
+  --accent: #E8562A;
+  --accent2: #F5A623;
+  --blue: #3A6EA5;
+  --green: #1A7A3A;
+  --text: #2A2520;
+  --muted: #7A7060;
+  --border: #DDD8CE;
+  --sh: 0 2px 12px rgba(0,0,0,0.10);
+  --sh2: 0 4px 24px rgba(0,0,0,0.13);
+  --r: 14px;
+  --rl: 20px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+#cv { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9999; }
+
+/* HEADER */
+.hdr { background: var(--gbill-dk); color:#fff; padding:12px 18px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:0 2px 10px rgba(0,0,0,0.25); }
+.logo { font-family:'Fredoka One',cursive; font-size:22px; color:#A8E6B8; display:flex; align-items:center; gap:8px; }
+.hdr-r { display:flex; align-items:center; gap:10px; }
+.lvl-pill { background:rgba(255,255,255,0.15); color:#D4F0DE; font-size:11px; font-weight:800; padding:4px 12px; border-radius:20px; text-transform:uppercase; letter-spacing:.05em; }
+.dots { display:flex; gap:5px; align-items:center; }
+.dot { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,0.25); transition:all .3s; }
+.dot.done { background:#A8E6B8; }
+.dot.active { background:#fff; transform:scale(1.3); }
+
+/* SCREENS */
+.scr { display:none; }
+.scr.on { display:block; }
+
+/* WELCOME */
+.w-wrap { max-width:620px; margin:0 auto; padding:28px 18px 48px; }
+.w-hero { text-align:center; margin-bottom:28px; }
+.hero-bills { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin:18px 0 10px; }
+.hbill { background:var(--gbill); border:3px solid var(--gbill-dk); border-radius:8px; color:#D4F0DE; font-family:'Fredoka One',cursive; display:flex; align-items:center; justify-content:center; box-shadow:3px 3px 0 var(--gbill-dk); animation:tilt 3s ease-in-out infinite; user-select:none; }
+.hbill:nth-child(even) { animation-direction:reverse; }
+@keyframes tilt { 0%,100%{transform:rotate(-2deg) translateY(0)} 50%{transform:rotate(2deg) translateY(-6px)} }
+.hero-coins { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
+.hcoin { border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; font-family:'Fredoka One',cursive; box-shadow:3px 3px 0 rgba(0,0,0,0.2); animation:bcoin 2.5s ease-in-out infinite; }
+.hcoin:nth-child(2){animation-delay:.3s} .hcoin:nth-child(3){animation-delay:.6s} .hcoin:nth-child(4){animation-delay:.9s}
+@keyframes bcoin { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.w-title { font-family:'Fredoka One',cursive; font-size:34px; color:var(--gbill-dk); line-height:1.1; margin-bottom:10px; }
+.w-sub { font-size:15px; color:var(--muted); line-height:1.6; }
+.lvl-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:22px; }
+.lc { background:var(--surface); border:2px solid var(--border); border-radius:var(--rl); padding:18px 14px; cursor:pointer; transition:all .18s; position:relative; overflow:hidden; text-align:left; }
+.lc::after { content:''; position:absolute; top:0; left:0; right:0; height:4px; border-radius:4px 4px 0 0; }
+.lc.l1::after{background:#4ECDC4} .lc.l2::after{background:var(--accent2)} .lc.l3::after{background:var(--blue)} .lc.l4::after{background:var(--accent)}
+.lc:hover { border-color:var(--gbill); transform:translateY(-3px); box-shadow:var(--sh2); }
+.lc:active { transform:scale(0.97); }
+.lc-emoji { font-size:30px; display:block; margin-bottom:6px; }
+.lc-title { font-size:15px; font-weight:900; color:var(--text); }
+.lc-desc { font-size:12px; color:var(--muted); margin-top:4px; line-height:1.4; }
+.lc-grade { position:absolute; top:10px; right:10px; font-size:10px; font-weight:800; background:var(--bg); color:var(--muted); padding:2px 8px; border-radius:10px; }
+
+/* QUESTION SCREEN */
+.qw { max-width:700px; margin:0 auto; padding:14px 14px 48px; }
+.qtop { display:flex; align-items:center; justify-content:space-between; margin-bottom:11px; }
+.back-btn { font-family:'Nunito',sans-serif; font-size:13px; font-weight:800; color:var(--muted); background:var(--surface); border:1.5px solid var(--border); border-radius:10px; padding:5px 13px; cursor:pointer; }
+.qnum { font-size:12px; font-weight:800; color:var(--muted); background:var(--surface); border:1.5px solid var(--border); border-radius:20px; padding:4px 14px; }
+.sc-pill { display:flex; align-items:center; gap:5px; font-size:13px; font-weight:800; color:var(--green); }
+
+/* Ref bar */
+.ref { display:flex; gap:8px; flex-wrap:wrap; background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r); padding:9px 12px; margin-bottom:11px; justify-content:center; }
+.ri { display:flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:var(--muted); }
+.rbm { background:var(--gbill); border:2px solid var(--gbill-dk); border-radius:4px; color:#D4F0DE; font-size:9px; font-weight:900; padding:2px 5px; font-family:'Fredoka One',cursive; }
+.rcm { border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:8px; flex-shrink:0; }
+
+/* Q card */
+.qcard { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--rl); padding:18px 16px; margin-bottom:11px; box-shadow:var(--sh); }
+.qi { font-family:'Fredoka One',cursive; font-size:20px; color:var(--text); line-height:1.2; margin-bottom:4px; }
+.qs { font-size:13px; color:var(--muted); margin-bottom:12px; }
+
+/* Store scene */
+.store { background:linear-gradient(to bottom,#E8F4EC,#D4EAD8); border:1.5px solid #A8D0B4; border-radius:14px; padding:14px; margin-bottom:12px; display:none; }
+.sit-row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.sit-img { font-size:50px; line-height:1; }
+.sit-name { font-family:'Fredoka One',cursive; font-size:18px; color:var(--gbill-dk); }
+.sit-price { font-size:28px; font-weight:900; color:var(--accent); margin-top:2px; }
+.paid-row { margin-top:10px; padding-top:10px; border-top:1.5px dashed #A8D0B4; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.paid-lbl { font-size:13px; font-weight:700; color:#3A6A4A; }
+.paid-val { font-size:20px; font-weight:900; color:#2A4A38; }
+.change-due { margin-left:auto; background:#2D7A4F; color:white; border-radius:10px; padding:6px 14px; font-size:14px; font-weight:800; }
+
+/* Display money */
+.dmoney { display:flex; flex-wrap:wrap; gap:8px; align-items:center; background:var(--bg); border-radius:12px; padding:12px; margin-bottom:12px; min-height:52px; display:none; }
+.dbill { background:var(--gbill); border:2.5px solid var(--gbill-dk); border-radius:6px; color:#D4F0DE; font-family:'Fredoka One',cursive; display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 0 var(--gbill-dk); }
+.dcoin { border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; box-shadow:2px 2px 0 rgba(0,0,0,0.2); }
+
+/* MC */
+.mcg { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; display:none; }
+.mcb { background:var(--surface); border:2px solid var(--border); border-radius:var(--r); padding:14px 10px; font-family:'Nunito',sans-serif; font-size:18px; font-weight:900; color:var(--text); cursor:pointer; transition:all .15s; text-align:center; }
+.mcb:hover { border-color:var(--gbill); background:var(--gbill-lt); }
+.mcb:active { transform:scale(0.96); }
+.mcb.ok  { background:#D4F0DA; border-color:#2D7A4F; color:#1A5A30; }
+.mcb.bad { background:#FAD4D4; border-color:#B04040; color:#7A1A1A; }
+.mcb:disabled { cursor:default; }
+
+/* Wallet / tray */
+.wlt { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--rl); padding:13px 15px; margin-bottom:11px; display:none; }
+.wlt-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
+.wlt-title { font-family:'Fredoka One',cursive; font-size:16px; color:var(--gbill-dk); }
+.wlt-tot { font-size:22px; font-weight:900; }
+.wlt-tot.match { color:#1A7A3A; }
+.wlt-tot.over  { color:var(--accent); }
+.clr-btn { font-size:11px; font-weight:800; color:var(--muted); background:var(--bg); border:1.5px solid var(--border); border-radius:8px; padding:3px 10px; cursor:pointer; font-family:'Nunito',sans-serif; }
+.tray { display:flex; flex-wrap:wrap; gap:5px; min-height:44px; align-items:center; background:var(--bg); border-radius:10px; padding:7px; margin-bottom:7px; }
+.tray-empty { font-size:12px; color:var(--muted); font-style:italic; padding:2px 4px; }
+.tbill { background:var(--gbill); border:2px solid var(--gbill-dk); border-radius:5px; color:#D4F0DE; font-family:'Fredoka One',cursive; display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 0 var(--gbill-dk); cursor:pointer; transition:all .1s; animation:pop .22s cubic-bezier(.34,1.56,.64,1); }
+.tcoin { border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; box-shadow:2px 2px 0 rgba(0,0,0,0.18); cursor:pointer; transition:all .1s; animation:pop .22s cubic-bezier(.34,1.56,.64,1); }
+.tbill:hover,.tcoin:hover { transform:scale(1.12) translateY(-2px); }
+.tbill:active,.tcoin:active { transform:scale(0.93); }
+@keyframes pop { from{transform:scale(0) rotate(-15deg);opacity:0} to{transform:scale(1) rotate(0);opacity:1} }
+.pb { height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+.pbf { height:100%; border-radius:4px; background:linear-gradient(90deg,#4ECDC4,#2D9A5A); transition:width .35s; }
+.pbf.over { background:linear-gradient(90deg,var(--accent2),var(--accent)); }
+
+/* Money shelf */
+.shelf { display:none; }
+.shelf-lbl { font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:5px; padding-left:2px; }
+.shelf-row { display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; margin-bottom:9px; }
+
+/* Bill btn */
+.bbtn { display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; cursor:pointer; padding:4px; border-radius:10px; transition:all .13s; font-family:'Nunito',sans-serif; position:relative; }
+.bbtn:hover { transform:translateY(-4px) rotate(2deg); }
+.bbtn:active { transform:scale(0.91); }
+.bbtn:disabled { opacity:.35; cursor:not-allowed; transform:none !important; }
+.bvis { background:var(--gbill); border:3px solid var(--gbill-dk); border-radius:6px; color:#D4F0DE; font-family:'Fredoka One',cursive; display:flex; align-items:center; justify-content:center; box-shadow:3px 3px 0 var(--gbill-dk); }
+.b-name { font-size:11px; font-weight:800; color:var(--muted); }
+.b-rem { position:absolute; top:0; right:0; background:var(--accent); color:white; font-size:9px; font-weight:900; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+
+/* Coin btn */
+.cbtn2 { display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:none; cursor:pointer; padding:4px; border-radius:10px; transition:all .13s; font-family:'Nunito',sans-serif; position:relative; }
+.cbtn2:hover .cvis { transform:translateY(-4px); }
+.cbtn2:active .cvis { transform:scale(0.91); }
+.cbtn2:disabled { opacity:.35; cursor:not-allowed; }
+.cbtn2:disabled .cvis { transform:none !important; }
+.cvis { border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:3px 3px 0 rgba(0,0,0,0.18); transition:all .13s; }
+.c-name { font-size:10px; font-weight:800; color:var(--muted); }
+.c-rem { position:absolute; top:0; right:0; background:var(--accent); color:white; font-size:9px; font-weight:900; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+
+/* Register info row */
+.reg-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:11px; display:none; }
+.reg-box { flex:1; min-width:90px; background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:8px 12px; text-align:center; }
+.reg-lbl { font-size:11px; font-weight:700; color:var(--muted); }
+.reg-val { font-size:20px; font-weight:900; margin-top:2px; }
+.reg-val.pv { color:var(--accent); }
+.reg-val.dv { color:var(--blue); }
+.reg-val.cv { color:var(--green); }
+
+/* Feedback */
+.fb { border-radius:12px; padding:12px 16px; margin-bottom:11px; display:none; align-items:flex-start; gap:10px; animation:slin .28s ease; }
+@keyframes slin { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:none} }
+.fb.ok  { display:flex; background:#E0F7EA; border:2px solid #90D4A8; }
+.fb.bad { display:flex; background:#FDE8E8; border:2px solid #F0AAAA; }
+.fb-ic { font-size:22px; flex-shrink:0; margin-top:1px; }
+.fb-t { font-size:15px; font-weight:900; }
+.fb-s { font-size:13px; font-weight:600; margin-top:3px; }
+.fb.ok  .fb-t { color:#0D6A30; }
+.fb.ok  .fb-s { color:#1A5A2A; }
+.fb.bad .fb-t { color:#8A1A1A; }
+.fb.bad .fb-s { color:#6A1A1A; }
+
+/* Action btn */
+.abtn { width:100%; background:var(--gbill); color:white; border:none; border-radius:16px; padding:17px; font-family:'Fredoka One',cursive; font-size:20px; cursor:pointer; transition:all .15s; box-shadow:0 4px 14px rgba(45,78,56,.35); letter-spacing:.3px; }
+.abtn:hover { background:var(--gbill-dk); transform:translateY(-1px); }
+.abtn:active { transform:scale(0.97); }
+.abtn:disabled { background:#C0BAB0; box-shadow:none; cursor:default; transform:none; }
+.abtn.nxt { background:#2D7A4F; box-shadow:0 4px 14px rgba(45,120,79,.4); }
+.abtn.nxt:hover { background:#1A5A38; }
+
+/* Results */
+.rw { max-width:520px; margin:0 auto; padding:40px 20px; text-align:center; }
+.rtrophy { font-size:80px; display:block; animation:bi .5s cubic-bezier(.34,1.56,.64,1); }
+@keyframes bi { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+.rt { font-family:'Fredoka One',cursive; font-size:34px; color:var(--gbill-dk); margin:10px 0 6px; }
+.rsub { font-size:15px; color:var(--muted); margin-bottom:26px; }
+.rcard { background:var(--surface); border:2px solid var(--border); border-radius:var(--rl); padding:24px; margin-bottom:22px; }
+.rbig { font-family:'Fredoka One',cursive; font-size:60px; color:var(--accent2); line-height:1; }
+.rof  { font-size:26px; font-weight:700; color:var(--muted); }
+.rlbl { font-size:14px; color:var(--muted); margin-top:4px; font-weight:700; }
+.rstars { font-size:36px; margin:10px 0; letter-spacing:4px; }
+.rbtns { display:flex; flex-direction:column; gap:10px; }
+.rb1 { background:var(--gbill); color:white; border:none; border-radius:14px; padding:16px; font-family:'Fredoka One',cursive; font-size:20px; cursor:pointer; box-shadow:0 4px 14px rgba(45,78,56,.3); transition:all .15s; }
+.rb1:hover { background:var(--gbill-dk); }
+.rb2 { background:var(--surface); color:var(--text); border:2px solid var(--border); border-radius:14px; padding:14px; font-family:'Nunito',sans-serif; font-size:16px; font-weight:800; cursor:pointer; transition:all .15s; }
+.rb2:hover { border-color:var(--muted); }
+
+@media(max-width:400px){.lvl-grid{grid-template-columns:1fr} .w-title{font-size:26px} .mcg{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<header class="hdr">
+  <div class="logo"><span>🏪</span> Money Shop</div>
+  <div class="hdr-r">
+    <div class="dots" id="dots"></div>
+    <div class="lvl-pill" id="lpill">Pick a Level</div>
+  </div>
+</header>
+
+<!-- WELCOME -->
+<div class="scr on" id="scr-welcome">
+  <div class="w-wrap">
+    <div class="w-hero">
+      <div class="hero-bills">
+        <div class="hbill" style="width:68px;height:36px;font-size:15px">$1</div>
+        <div class="hbill" style="width:76px;height:40px;font-size:17px">$5</div>
+        <div class="hbill" style="width:84px;height:44px;font-size:19px">$10</div>
+        <div class="hbill" style="width:84px;height:44px;font-size:19px">$20</div>
+      </div>
+      <div class="hero-coins" style="margin-top:10px">
+        <div class="hcoin" style="width:34px;height:34px;background:var(--penny);border:3px solid var(--penny-dk);color:var(--penny-dk)">1c</div>
+        <div class="hcoin" style="width:42px;height:42px;background:var(--nickel);border:3px solid var(--nickel-dk);color:var(--nickel-dk)">5c</div>
+        <div class="hcoin" style="width:28px;height:28px;background:var(--dime);border:3px solid var(--dime-dk);color:var(--dime-dk);font-size:8px">10c</div>
+        <div class="hcoin" style="width:48px;height:48px;background:var(--quarter);border:3px solid var(--quarter-dk);color:var(--quarter-dk)">25c</div>
+      </div>
+      <div class="w-title" style="margin-top:20px">Bills &amp; Coins!</div>
+      <p class="w-sub">Count money, build totals, and run your very own shop register. Pick your level to begin!</p>
+    </div>
+    <div class="lvl-grid">
+      <div class="lc l1" onclick="startLevel(1)">
+        <span class="lc-grade">Grade 2</span>
+        <span class="lc-emoji">⭐</span>
+        <div class="lc-title">Bill Basics</div>
+        <div class="lc-desc">Learn $1, $5, $10, $20. Count a few bills together.</div>
+      </div>
+      <div class="lc l2" onclick="startLevel(2)">
+        <span class="lc-grade">Grade 2</span>
+        <span class="lc-emoji">⭐⭐</span>
+        <div class="lc-title">Money Counter</div>
+        <div class="lc-desc">Mix bills and coins. Find totals up to $10.</div>
+      </div>
+      <div class="lc l3" onclick="startLevel(3)">
+        <span class="lc-grade">Grade 3</span>
+        <span class="lc-emoji">⭐⭐⭐</span>
+        <div class="lc-title">Shopper</div>
+        <div class="lc-desc">Buy things and figure out how much change you get back.</div>
+      </div>
+      <div class="lc l4" onclick="startLevel(4)">
+        <span class="lc-grade">Grade 3+</span>
+        <span class="lc-emoji">🏪</span>
+        <div class="lc-title">Run the Register</div>
+        <div class="lc-desc">Work the cash register! Give exact change using limited bills and coins.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUESTION SCREEN -->
+<div class="scr" id="scr-question">
+  <div class="qw">
+    <div class="qtop">
+      <button class="back-btn" onclick="goHome()">← Menu</button>
+      <div class="qnum" id="qnum">Q 1/6</div>
+      <div class="sc-pill" id="scpill">⭐ 0 pts</div>
+    </div>
+
+    <!-- Ref bar -->
+    <div class="ref">
+      <div class="ri"><div class="rbm">$1</div>= 100c</div>
+      <div class="ri"><div class="rbm">$5</div>= $5</div>
+      <div class="ri"><div class="rbm">$10</div>= $10</div>
+      <div class="ri"><div class="rbm">$20</div>= $20</div>
+      <div class="ri"><div class="rcm" style="width:18px;height:18px;background:var(--quarter);border:2px solid var(--quarter-dk);color:var(--quarter-dk)">25c</div>Quarter</div>
+      <div class="ri"><div class="rcm" style="width:15px;height:15px;background:var(--dime);border:2px solid var(--dime-dk);color:var(--dime-dk);font-size:7px">10c</div>Dime</div>
+      <div class="ri"><div class="rcm" style="width:19px;height:19px;background:var(--nickel);border:2px solid var(--nickel-dk);color:var(--nickel-dk);font-size:8px">5c</div>Nickel</div>
+      <div class="ri"><div class="rcm" style="width:15px;height:15px;background:var(--penny);border:2px solid var(--penny-dk);color:var(--penny-dk);font-size:7px">1c</div>Penny</div>
+    </div>
+
+    <!-- Q card -->
+    <div class="qcard">
+      <div class="qi" id="qi">Loading...</div>
+      <div class="qs" id="qs"></div>
+
+      <!-- Store scene -->
+      <div class="store" id="store">
+        <div class="sit-row">
+          <div class="sit-img" id="s-emoji">🍎</div>
+          <div>
+            <div class="sit-name" id="s-name">Item</div>
+            <div class="sit-price" id="s-price">$1.00</div>
+          </div>
+        </div>
+        <div class="paid-row">
+          <span class="paid-lbl">Customer paid:</span>
+          <span class="paid-val" id="s-paid">$2.00</span>
+          <div class="change-due" id="s-change">Change due: $1.00</div>
+        </div>
+      </div>
+
+      <!-- Display money -->
+      <div class="dmoney" id="dmoney"></div>
+
+      <!-- MC grid -->
+      <div class="mcg" id="mcg"></div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="fb" id="fb">
+      <div class="fb-ic" id="fb-ic">✅</div>
+      <div><div class="fb-t" id="fb-t">Correct!</div><div class="fb-s" id="fb-s"></div></div>
+    </div>
+
+    <!-- Register info boxes -->
+    <div class="reg-row" id="reg-row">
+      <div class="reg-box"><div class="reg-lbl">Item Price</div><div class="reg-val pv" id="rv-price">--</div></div>
+      <div class="reg-box"><div class="reg-lbl">Customer Paid</div><div class="reg-val dv" id="rv-paid">--</div></div>
+      <div class="reg-box"><div class="reg-lbl">Change Needed</div><div class="reg-val cv" id="rv-change">--</div></div>
+    </div>
+
+    <!-- Wallet tray -->
+    <div class="wlt" id="wlt">
+      <div class="wlt-hdr">
+        <div class="wlt-title" id="wlt-title">💵 Your Wallet</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="wlt-tot" id="wlt-tot">$0.00</div>
+          <button class="clr-btn" onclick="clearWallet()">Clear</button>
+        </div>
+      </div>
+      <div class="tray" id="tray"><span class="tray-empty">Tap bills and coins below to add them!</span></div>
+      <div class="pb"><div class="pbf" id="pbf" style="width:0%"></div></div>
+    </div>
+
+    <!-- Money shelf -->
+    <div class="shelf" id="shelf">
+      <div class="shelf-lbl">Tap to add to your tray</div>
+      <div class="shelf-row" id="shelf-bills"></div>
+      <div class="shelf-row" id="shelf-coins"></div>
+    </div>
+
+    <button class="abtn" id="abtn" onclick="handleAction()" disabled>Check Answer</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="scr" id="scr-results">
+  <div class="rw">
+    <span class="rtrophy" id="rtrophy">🏆</span>
+    <div class="rt" id="rt">Well done!</div>
+    <p class="rsub" id="rsub">You finished!</p>
+    <div class="rcard">
+      <div><span class="rbig" id="rscore">5</span><span class="rof" id="rof">/6</span></div>
+      <div class="rlbl">questions correct</div>
+      <div class="rstars" id="rstars">⭐⭐⭐</div>
+    </div>
+    <div class="rbtns">
+      <button class="rb1" onclick="retryLevel()">Try Again 🔄</button>
+      <button class="rb2" onclick="goHome()">Choose a Different Level</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== MONEY DEFS =====
+const BILLS = {
+  d1:  {value:100,  label:'$1',  name:'$1',  w:58, h:30, fs:13},
+  d5:  {value:500,  label:'$5',  name:'$5',  w:64, h:33, fs:14},
+  d10: {value:1000, label:'$10', name:'$10', w:72, h:37, fs:15},
+  d20: {value:2000, label:'$20', name:'$20', w:72, h:37, fs:15},
+};
+const COINS = {
+  penny:   {value:1,  label:'1c',  name:'Penny',   size:28, bg:'#C8793E', bd:'#7A4620', cl:'#4A2010'},
+  nickel:  {value:5,  label:'5c',  name:'Nickel',  size:34, bg:'#9BAAB5', bd:'#4A6070', cl:'#1A3040'},
+  dime:    {value:10, label:'10c', name:'Dime',    size:24, bg:'#A8BDD0', bd:'#3A5870', cl:'#1A3850'},
+  quarter: {value:25, label:'25c', name:'Quarter', size:40, bg:'#C8CDD2', bd:'#505860', cl:'#202830'},
+};
+
+function fc(n){ return '$'+(n/100).toFixed(2); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a; }
+function g(id){ return document.getElementById(id); }
+function showScr(s){ document.querySelectorAll('.scr').forEach(e=>e.classList.remove('on')); g('scr-'+s).classList.add('on'); }
+function setDots(tot,done){ const c=g('dots');c.innerHTML='';for(let i=0;i<tot;i++){const d=document.createElement('div');d.className='dot'+(i<done?' done':i===done?' active':'');c.appendChild(d);} }
+
+// ===== QUESTION BANKS =====
+const QB = {
+  1:[
+    {type:'mc', q:'Which bill is worth the MOST?', sub:'Tap the right answer!',
+     choices:['$1 bill','$5 bill','$10 bill','$20 bill'], answer:'$20 bill',
+     fb:'A $20 bill is worth twenty dollars — the most of these four!', praise:'You know your bills!'},
+    {type:'mc', q:'How much is a $5 bill worth?', sub:'',
+     choices:['$1','$5','$10','$50'], answer:'$5',
+     fb:'A $5 bill is worth five dollars — like five $1 bills!', praise:'Nice!'},
+    {type:'count', q:'How much money is shown?', sub:'Count the bills!',
+     money:[{t:'b',k:'d1'},{t:'b',k:'d1'},{t:'b',k:'d1'}],
+     ans:300, choices:[100,200,300,400],
+     fb:'3 one-dollar bills = $3.00', praise:'Great counting!'},
+    {type:'count', q:'How much money is shown?', sub:'Add the bills!',
+     money:[{t:'b',k:'d5'},{t:'b',k:'d1'}],
+     ans:600, choices:[400,500,600,700],
+     fb:'$5 + $1 = $6.00', praise:'Excellent!'},
+    {type:'build', q:'Make $3.00', sub:'Tap bills to add them to your wallet.',
+     target:300, ab:['d1','d5'], ac:[], mx:{d1:10,d5:2},
+     fb:'Three $1 bills makes exactly $3.00!', praise:'You made $3!'},
+    {type:'mc', q:'How many $1 bills equal a $5 bill?', sub:'',
+     choices:['3','4','5','6'], answer:'5',
+     fb:'Five $1 bills = one $5 bill. Both are worth $5!', praise:'Dollar facts — nailed it!'},
+  ],
+  2:[
+    {type:'count', q:'How much money is shown?', sub:'Count all the bills and coins!',
+     money:[{t:'b',k:'d1'},{t:'c',k:'quarter'},{t:'c',k:'dime'}],
+     ans:135, choices:[115,125,135,145],
+     fb:'$1.00 + $0.25 + $0.10 = $1.35', praise:'Bills AND coins — great job!'},
+    {type:'build', q:'Make $2.75', sub:'Use bills and coins together.',
+     target:275, ab:['d1','d5'], ac:['quarter','nickel','penny'],
+     mx:{d1:5,d5:1,quarter:10,nickel:10,penny:10},
+     fb:'$2 + 3 quarters = $2.75, or many other ways!', praise:'You made $2.75!'},
+    {type:'count', q:'How much money is shown?', sub:'',
+     money:[{t:'b',k:'d5'},{t:'c',k:'quarter'},{t:'c',k:'quarter'},{t:'c',k:'dime'}],
+     ans:560, choices:[540,550,560,570],
+     fb:'$5 + 25c + 25c + 10c = $5.60', praise:'Multi-value counting — excellent!'},
+    {type:'mc', q:'You have a $10 bill and a quarter. How much is that?', sub:'',
+     choices:['$9.75','$10.00','$10.25','$10.50'], answer:'$10.25',
+     fb:'$10.00 + $0.25 = $10.25', praise:'Great mental math!'},
+    {type:'build', q:'Make $7.50', sub:'Use any bills and coins you like.',
+     target:750, ab:['d1','d5','d10'], ac:['quarter','dime','nickel'],
+     mx:{d1:10,d5:2,d10:1,quarter:10,dime:10,nickel:10},
+     fb:'$5 + $2 + 50c = $7.50, or $5 + $1 + $1 + 50c, and other ways!', praise:'$7.50 — nice work!'},
+    {type:'count', q:'How much money is shown?', sub:'Count carefully!',
+     money:[{t:'b',k:'d10'},{t:'b',k:'d1'},{t:'c',k:'quarter'},{t:'c',k:'nickel'}],
+     ans:1130, choices:[1100,1120,1130,1150],
+     fb:'$10 + $1 + 25c + 5c = $11.30', praise:'Counting up to $11 — awesome!'},
+  ],
+  3:[
+    {type:'shop', q:'How much change does the customer get?', sub:'Subtract the price from what they paid.',
+     item:{emoji:'🍎',name:'Apple',price:75}, paid:100,
+     ans:25, choices:[15,25,35,50],
+     fb:'$1.00 - $0.75 = $0.25. One quarter back!', praise:'Perfect change!'},
+    {type:'shop', q:'How much change does the customer get?', sub:'',
+     item:{emoji:'🥤',name:'Juice Box',price:125}, paid:200,
+     ans:75, choices:[50,75,100,125],
+     fb:'$2.00 - $1.25 = $0.75. Three quarters!', praise:'Great subtraction!'},
+    {type:'shop', q:'How much change does the customer get?', sub:'',
+     item:{emoji:'📚',name:'Book',price:299}, paid:500,
+     ans:201, choices:[199,200,201,205],
+     fb:'$5.00 - $2.99 = $2.01. Two dollars and one penny!', praise:'You can make change!'},
+    {type:'shop', q:'How much change does the customer get?', sub:'',
+     item:{emoji:'🍫',name:'Chocolate',price:99}, paid:200,
+     ans:101, choices:[95,99,101,105],
+     fb:'$2.00 - $0.99 = $1.01. A dollar and a penny!', praise:'Tricky — and you got it!'},
+    {type:'shop', q:'How much change does the customer get?', sub:'',
+     item:{emoji:'✏️',name:'Pencil Set',price:149}, paid:500,
+     ans:351, choices:[341,351,361,400],
+     fb:'$5.00 - $1.49 = $3.51. Three dollars, two quarters, one penny!', praise:'Excellent change-making!'},
+    {type:'shop', q:'How much change does the customer get?', sub:'',
+     item:{emoji:'🎨',name:'Paint Set',price:499}, paid:1000,
+     ans:501, choices:[401,451,501,551],
+     fb:'$10.00 - $4.99 = $5.01. A $5 bill and one penny!', praise:'You are a shopping pro!'},
+  ],
+  4:[
+    {type:'register',
+     item:{emoji:'🍪',name:'Cookie',price:50}, paid:100,
+     reg:{d1:2,d5:0,d10:0,d20:0,quarter:3,dime:2,nickel:2,penny:5}},
+    {type:'register',
+     item:{emoji:'🎈',name:'Balloon',price:25}, paid:100,
+     reg:{d1:1,d5:1,d10:0,d20:0,quarter:2,dime:3,nickel:1,penny:4}},
+    {type:'register',
+     item:{emoji:'🥤',name:'Juice Box',price:125}, paid:200,
+     reg:{d1:2,d5:1,d10:0,d20:0,quarter:4,dime:2,nickel:3,penny:5}},
+    {type:'register',
+     item:{emoji:'🍎',name:'Apple',price:75}, paid:500,
+     reg:{d1:4,d5:1,d10:1,d20:0,quarter:3,dime:4,nickel:2,penny:3}},
+    {type:'register',
+     item:{emoji:'✏️',name:'Pencil Set',price:149}, paid:200,
+     reg:{d1:3,d5:1,d10:0,d20:0,quarter:3,dime:3,nickel:4,penny:6}},
+    {type:'register',
+     item:{emoji:'📚',name:'Book',price:299}, paid:500,
+     reg:{d1:5,d5:1,d10:1,d20:0,quarter:4,dime:3,nickel:3,penny:5}},
+  ]
+};
+
+// ===== STATE =====
+let level=1, questions=[], qIdx=0, score=0;
+let wItems=[], wTotal=0, wTarget=0, wDone=false;
+let regRem={};
+
+// ===== NAV =====
+function goHome(){ showScr('welcome'); g('lpill').textContent='Pick a Level'; setDots(0,0); }
+function retryLevel(){ startLevel(level); }
+
+function startLevel(l){
+  level=l;
+  const names=['','Bill Basics','Money Counter','Shopper','Run the Register'];
+  g('lpill').textContent=names[l];
+  questions=shuffle([...QB[l]]);
+  qIdx=0; score=0;
+  showScr('question');
+  loadQ();
+}
+
+// ===== LOAD Q =====
+function loadQ(){
+  wItems=[]; wTotal=0; wTarget=0; wDone=false; regRem={};
+  const q=questions[qIdx], tot=questions.length;
+  g('qnum').textContent='Q '+(qIdx+1)+'/'+tot;
+  g('scpill').textContent='⭐ '+score+' pts';
+  setDots(tot,qIdx);
+  g('qi').textContent=q.q||'';
+  g('qs').textContent=q.sub||'';
+  ['store','dmoney','mcg','wlt','shelf','reg-row'].forEach(id=>{ const el=g(id); if(el) el.style.display='none'; });
+  g('mcg').innerHTML='';
+  hideFb();
+  const ab=g('abtn');
+  ab.textContent='Check Answer'; ab.className='abtn'; ab.disabled=true; ab.onclick=handleAction;
+  if(q.type==='mc') loadMC(q);
+  else if(q.type==='count') loadCount(q);
+  else if(q.type==='build') loadBuild(q);
+  else if(q.type==='shop')  loadShop(q);
+  else if(q.type==='register') loadRegister(q);
+}
+
+// ===== MC =====
+function loadMC(q){
+  const grid=g('mcg'); grid.style.display='grid';
+  shuffle([...q.choices]).forEach(c=>{
+    const b=document.createElement('button');
+    b.className='mcb'; b.textContent=c;
+    b.onclick=()=>pickMC(b,c,q);
+    grid.appendChild(b);
+  });
+  g('abtn').style.display='none';
+}
+function pickMC(btn,choice,q){
+  if(wDone) return;
+  wDone=true;
+  const ok=(choice===q.answer);
+  btn.classList.add(ok?'ok':'bad');
+  document.querySelectorAll('.mcb').forEach(b=>{ b.disabled=true; if(b.textContent===q.answer) b.classList.add('ok'); });
+  if(ok){ score++; g('scpill').textContent='⭐ '+score+' pts'; showFb(true,q.praise||'Correct!',q.fb); if(score%3===0)doConfetti(); }
+  else showFb(false,'Not quite — see the correct answer highlighted above.',q.fb);
+  showNext();
+}
+
+// ===== COUNT =====
+function loadCount(q){
+  const area=g('dmoney'); area.style.display='flex'; area.innerHTML='';
+  q.money.forEach(m=>{
+    if(m.t==='b'){
+      const b=BILLS[m.k], el=document.createElement('div');
+      el.className='dbill'; el.style.cssText='width:'+b.w+'px;height:'+b.h+'px;font-size:'+b.fs+'px;';
+      el.textContent=b.label; area.appendChild(el);
+    } else {
+      const c=COINS[m.k], el=document.createElement('div');
+      el.className='dcoin'; el.style.cssText='width:'+c.size+'px;height:'+c.size+'px;background:'+c.bg+';border:2px solid '+c.bd+';color:'+c.cl+';font-size:'+(c.size>30?11:9)+'px;';
+      el.textContent=c.label; area.appendChild(el);
+    }
+  });
+  const grid=g('mcg'); grid.style.display='grid';
+  shuffle([...q.choices]).forEach(cv=>{
+    const b=document.createElement('button');
+    b.className='mcb'; b.textContent=fc(cv);
+    b.onclick=()=>pickMC(b,fc(cv),{...q,answer:fc(q.ans),choices:q.choices.map(fc)});
+    grid.appendChild(b);
+  });
+  g('abtn').style.display='none';
+}
+
+// ===== BUILD =====
+function loadBuild(q){
+  wTarget=q.target;
+  g('wlt').style.display='block'; g('wlt-title').textContent='💵 Your Wallet';
+  g('shelf').style.display='block';
+  renderWallet(); buildShelf(q.ab||[],q.ac||[],q.mx||{});
+  g('abtn').disabled=true; g('abtn').style.display='block';
+}
+
+// ===== SHOP =====
+function loadShop(q){
+  g('store').style.display='block';
+  g('s-emoji').textContent=q.item.emoji;
+  g('s-name').textContent=q.item.name;
+  g('s-price').textContent=fc(q.item.price);
+  g('s-paid').textContent=fc(q.paid);
+  g('s-change').style.display='none';
+  const grid=g('mcg'); grid.style.display='grid';
+  shuffle([...q.choices]).forEach(cv=>{
+    const b=document.createElement('button');
+    b.className='mcb'; b.textContent=fc(cv);
+    b.onclick=()=>pickMC(b,fc(cv),{...q,answer:fc(q.ans),choices:q.choices.map(fc)});
+    grid.appendChild(b);
+  });
+  g('abtn').style.display='none';
+}
+
+// ===== REGISTER =====
+function loadRegister(q){
+  g('qi').textContent='Give the customer their change!';
+  g('qs').textContent='Use the bills and coins in your register. Tap what you want to hand back.';
+  const change=q.paid-q.item.price;
+  g('reg-row').style.display='flex';
+  g('rv-price').textContent=fc(q.item.price);
+  g('rv-paid').textContent=fc(q.paid);
+  g('rv-change').textContent=fc(change);
+  g('store').style.display='block';
+  g('s-emoji').textContent=q.item.emoji;
+  g('s-name').textContent=q.item.name;
+  g('s-price').textContent=fc(q.item.price);
+  g('s-paid').textContent=fc(q.paid);
+  g('s-change').style.display='';
+  g('s-change').textContent='Change due: '+fc(change);
+  wTarget=change;
+  Object.assign(regRem,q.reg);
+  g('wlt').style.display='block'; g('wlt-title').textContent='🏪 Change Tray';
+  g('shelf').style.display='block';
+  renderWallet(); buildRegisterShelf(q);
+  g('abtn').disabled=true; g('abtn').style.display='block';
+}
+
+// ===== SHELF BUILDERS =====
+function buildShelf(bKeys,cKeys,mx){
+  const br=g('shelf-bills'), cr=g('shelf-coins');
+  br.innerHTML=''; cr.innerHTML='';
+  bKeys.forEach(k=>{
+    const b=BILLS[k], max=mx[k]||99;
+    const btn=document.createElement('button'); btn.className='bbtn'; btn.id='sb-'+k;
+    btn.innerHTML='<div class="bvis" style="width:'+b.w+'px;height:'+b.h+'px;font-size:'+b.fs+'px;">'+b.label+'</div><span class="b-name">'+b.label+'</span>';
+    btn.onclick=()=>addItem('bill',k,b.value,max,btn);
+    br.appendChild(btn);
+  });
+  cKeys.forEach(k=>{
+    const c=COINS[k], max=mx[k]||99;
+    const btn=document.createElement('button'); btn.className='cbtn2'; btn.id='sb-'+k;
+    btn.innerHTML='<div class="cvis" style="width:'+c.size+'px;height:'+c.size+'px;background:'+c.bg+';border:3px solid '+c.bd+';color:'+c.cl+';font-size:'+(c.size>32?12:9)+'px;">'+c.label+'</div><span class="c-name">'+c.name+'</span>';
+    btn.onclick=()=>addItem('coin',k,c.value,max,btn);
+    cr.appendChild(btn);
+  });
+}
+
+function buildRegisterShelf(q){
+  const br=g('shelf-bills'), cr=g('shelf-coins');
+  br.innerHTML=''; cr.innerHTML='';
+  const reg=q.reg;
+
+  Object.keys(BILLS).forEach(k=>{
+    const cnt=reg[k]||0; if(!cnt) return;
+    const b=BILLS[k]; regRem[k]=cnt;
+    // Wrapper holds the stacked visuals + label, clicking any visual takes one bill
+    const wrap=document.createElement('div');
+    wrap.id='sb-'+k;
+    wrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;';
+    // Stack container — bills offset so they look like a pile
+    const stack=document.createElement('div');
+    stack.id='stack-'+k;
+    stack.style.cssText='position:relative;width:'+(b.w+8)+'px;height:'+(b.h+cnt*4)+'px;';
+    for(let i=0;i<cnt;i++){
+      const bill=document.createElement('div');
+      bill.className='bvis';
+      bill.style.cssText='position:absolute;bottom:'+(i*4)+'px;left:'+(Math.min(i,3))+'px;width:'+b.w+'px;height:'+b.h+'px;font-size:'+b.fs+'px;';
+      bill.textContent=b.label;
+      stack.appendChild(bill);
+    }
+    const lbl=document.createElement('span');
+    lbl.className='b-name'; lbl.textContent=b.label;
+    wrap.appendChild(stack); wrap.appendChild(lbl);
+    wrap.onclick=()=>addRegItem('bill',k,b.value,wrap);
+    br.appendChild(wrap);
+  });
+
+  Object.keys(COINS).forEach(k=>{
+    const cnt=reg[k]||0; if(!cnt) return;
+    const c=COINS[k]; regRem[k]=cnt;
+    const wrap=document.createElement('div');
+    wrap.id='sb-'+k;
+    wrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;';
+    // Coins in a small grid — up to 5 per row
+    const grid=document.createElement('div');
+    grid.id='stack-'+k;
+    grid.style.cssText='display:flex;flex-wrap:wrap;gap:3px;max-width:'+(Math.min(cnt,5)*(c.size+3))+'px;justify-content:center;';
+    for(let i=0;i<cnt;i++){
+      const coin=document.createElement('div');
+      coin.className='cvis';
+      coin.style.cssText='width:'+c.size+'px;height:'+c.size+'px;background:'+c.bg+';border:2px solid '+c.bd+';color:'+c.cl+';font-size:'+(c.size>32?11:9)+'px;';
+      coin.textContent=c.label;
+      grid.appendChild(coin);
+    }
+    const lbl=document.createElement('span');
+    lbl.className='c-name'; lbl.textContent=c.name;
+    wrap.appendChild(grid); wrap.appendChild(lbl);
+    wrap.onclick=()=>addRegItem('coin',k,c.value,wrap);
+    cr.appendChild(wrap);
+  });
+}
+
+// Re-render a register shelf item after a coin/bill is removed
+function refreshRegShelfItem(type,key){
+  const wrap=g('sb-'+key);
+  if(!wrap) return;
+  const cnt=regRem[key]||0;
+  if(type==='bill'){
+    const b=BILLS[key];
+    const stack=g('stack-'+key);
+    stack.innerHTML='';
+    stack.style.height=(b.h+cnt*4)+'px';
+    for(let i=0;i<cnt;i++){
+      const bill=document.createElement('div');
+      bill.className='bvis';
+      bill.style.cssText='position:absolute;bottom:'+(i*4)+'px;left:'+(Math.min(i,3))+'px;width:'+b.w+'px;height:'+b.h+'px;font-size:'+b.fs+'px;';
+      bill.textContent=b.label;
+      stack.appendChild(bill);
+    }
+    wrap.style.opacity=cnt===0?'0.3':'1';
+    wrap.style.pointerEvents=cnt===0?'none':'auto';
+  } else {
+    const c=COINS[key];
+    const grid=g('stack-'+key);
+    grid.innerHTML='';
+    for(let i=0;i<cnt;i++){
+      const coin=document.createElement('div');
+      coin.className='cvis';
+      coin.style.cssText='width:'+c.size+'px;height:'+c.size+'px;background:'+c.bg+';border:2px solid '+c.bd+';color:'+c.cl+';font-size:'+(c.size>32?11:9)+'px;';
+      coin.textContent=c.label;
+      grid.appendChild(coin);
+    }
+    wrap.style.opacity=cnt===0?'0.3':'1';
+    wrap.style.pointerEvents=cnt===0?'none':'auto';
+  }
+}
+
+// ===== WALLET ACTIONS =====
+function addItem(type,key,val,max,btnEl){
+  if(wDone) return;
+  if(wItems.filter(i=>i.key===key).length>=max) return;
+  wItems.push({type,key,val});
+  wTotal+=val;
+  renderWallet(); updPb();
+  g('abtn').disabled=(wTotal===0);
+}
+function addRegItem(type,key,val,btnEl){
+  if(wDone) return;
+  if((regRem[key]||0)<=0) return;
+  regRem[key]--;
+  refreshRegShelfItem(type,key);
+  wItems.push({type,key,val});
+  wTotal+=val;
+  renderWallet(); updPb();
+  g('abtn').disabled=(wTotal===0);
+}
+function removeItem(idx){
+  if(wDone) return;
+  const item=wItems[idx];
+  wItems.splice(idx,1);
+  wTotal-=item.val;
+  const q=questions[qIdx];
+  if(q.type==='register'){
+    regRem[item.key]=(regRem[item.key]||0)+1;
+    refreshRegShelfItem(item.type,item.key);
+  }
+  renderWallet(); updPb();
+  g('abtn').disabled=(wTotal===0);
+}
+function clearWallet(){
+  if(wDone) return;
+  const q=questions[qIdx];
+  if(q && q.type==='register'){
+    wItems.forEach(item=>{
+      regRem[item.key]=(regRem[item.key]||0)+1;
+      refreshRegShelfItem(item.type,item.key);
+    });
+  }
+  wItems=[]; wTotal=0;
+  renderWallet(); updPb();
+  g('abtn').disabled=true;
+}
+
+function renderWallet(){
+  const tray=g('tray'); tray.innerHTML='';
+  if(!wItems.length){ tray.innerHTML='<span class="tray-empty">Tap bills and coins below to add them!</span>'; }
+  else {
+    wItems.forEach((item,i)=>{
+      let el;
+      if(item.type==='bill'){
+        const b=BILLS[item.key]; el=document.createElement('div');
+        el.className='tbill'; el.style.cssText='width:'+b.w+'px;height:'+b.h+'px;font-size:'+b.fs+'px;';
+        el.textContent=b.label;
+      } else {
+        const c=COINS[item.key]; el=document.createElement('div');
+        el.className='tcoin'; el.style.cssText='width:'+c.size+'px;height:'+c.size+'px;background:'+c.bg+';border:2px solid '+c.bd+';color:'+c.cl+';font-size:'+(c.size>30?11:9)+'px;';
+        el.textContent=c.label;
+      }
+      el.title='Tap to remove'; el.onclick=()=>removeItem(i);
+      tray.appendChild(el);
+    });
+  }
+  const tot=g('wlt-tot');
+  tot.textContent=fc(wTotal);
+  tot.className='wlt-tot'+(wTarget>0&&wTotal===wTarget?' match':wTarget>0&&wTotal>wTarget?' over':'');
+}
+function updPb(){
+  const pct=wTarget>0?Math.min((wTotal/wTarget)*100,110):0;
+  const f=g('pbf'); f.style.width=Math.min(pct,100)+'%'; f.className='pbf'+(wTotal>wTarget?' over':'');
+}
+
+// ===== CHECK =====
+function handleAction(){
+  if(wDone){ nextQ(); return; }
+  const q=questions[qIdx]; wDone=true;
+  if(wTotal===wTarget){
+    score++; g('scpill').textContent='⭐ '+score+' pts';
+    showFb(true,q.praise||'Correct!',q.fb||('You made exactly '+fc(wTarget)+'!'));
+    doConfetti();
+  } else {
+    wDone=false;
+    const diff=wTarget-wTotal;
+    const msg=wTotal<wTarget?'You have '+fc(wTotal)+' — need '+fc(diff)+' more!':'Too much! You gave '+fc(wTotal)+' but only need '+fc(wTarget)+'. Tap coins to remove some.';
+    showFb(false,msg,'');
+    setTimeout(hideFb,2800); return;
+  }
+  showNext();
+}
+
+function showNext(){
+  const b=g('abtn');
+  b.style.display='block';
+  b.textContent=qIdx<questions.length-1?'Next Question →':'See My Results!';
+  b.className='abtn nxt'; b.disabled=false; b.onclick=nextQ;
+}
+function nextQ(){ qIdx++; if(qIdx>=questions.length) showResults(); else loadQ(); }
+
+// ===== FEEDBACK =====
+function showFb(ok,title,sub){
+  const b=g('fb'); b.className='fb '+(ok?'ok':'bad');
+  g('fb-ic').textContent=ok?'✅':'💡';
+  g('fb-t').textContent=title; g('fb-s').textContent=sub||'';
+}
+function hideFb(){ g('fb').className='fb'; }
+
+// ===== RESULTS =====
+function showResults(){
+  showScr('results');
+  const tot=questions.length, pct=score/tot;
+  const info=pct===1?['🏆','Perfect Score!','Every single one correct — incredible!']:
+              pct>=0.8?['🎉','Amazing!','You really know your money!']:
+              pct>=0.6?['⭐','Good Work!','Getting better — try again to improve!']:
+              ['💪','Keep Practicing!','Money takes practice — you\'ll get it!'];
+  g('rtrophy').textContent=info[0]; g('rt').textContent=info[1]; g('rsub').textContent=info[2];
+  g('rscore').textContent=score; g('rof').textContent='/'+tot;
+  g('rstars').textContent=pct===1?'⭐⭐⭐':pct>=0.67?'⭐⭐':'⭐';
+  setDots(tot,tot); if(pct>=0.6) doConfetti();
+}
+
+// ===== CONFETTI =====
+function doConfetti(){
+  const cv=g('cv'), ctx=cv.getContext('2d');
+  cv.width=window.innerWidth; cv.height=window.innerHeight;
+  const p=Array.from({length:80},()=>({
+    x:Math.random()*cv.width,y:-10,sz:Math.random()*9+4,
+    cl:['#4A7C59','#E8562A','#F5A623','#3A6EA5','#C8A850','#D4F0DA'][Math.floor(Math.random()*6)],
+    vx:(Math.random()-.5)*5,vy:Math.random()*3+2,rot:Math.random()*360,vr:(Math.random()-.5)*9
+  }));
+  let f=0;
+  function an(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    p.forEach(o=>{o.x+=o.vx;o.y+=o.vy;o.rot+=o.vr;ctx.save();ctx.translate(o.x,o.y);ctx.rotate(o.rot*Math.PI/180);ctx.fillStyle=o.cl;ctx.fillRect(-o.sz/2,-o.sz/2,o.sz,o.sz);ctx.restore();});
+    if(++f<100) requestAnimationFrame(an); else ctx.clearRect(0,0,cv.width,cv.height);
+  }
+  an();
+}
+
+setDots(0,0);
+</script>
+</body>
+</html>
